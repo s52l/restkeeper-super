@@ -172,7 +172,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements ID
     public Boolean updateDishNumber(Long step,Long dishId) {
         //修改菜品数量
         Integer row = dishMapper.updateDishNumber(step,dishId);
-        return row==1 ? true:false;
+        return row==1;
     }
 
     @Override

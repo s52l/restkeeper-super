@@ -363,7 +363,7 @@ public class AppletFaceImpl implements AppletFace {
             if (lockOrder.tryLock(
                     AppletCacheConstant.REDIS_WAIT_TIME,
                     AppletCacheConstant.REDIS_LEASETIME,
-                    TimeUnit.SECONDS)) {
+                    TimeUnit.MINUTES)) {
                 String keyDish = AppletCacheConstant.REPERTORY_DISH + dishId;
                 RAtomicLong atomicLong = redissonClient.getAtomicLong(keyDish);
                 //3.1、添加到购物车订单项
@@ -409,6 +409,8 @@ public class AppletFaceImpl implements AppletFace {
                 throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
             }
             //3、查询redis缓存的购物车订单项
+            //购物车使用Redis存储，Hash数据结构：主key：业务前缀+订单编号， 辅key：菜品id， value：OrderItemVo json
+            //购物车不需要登录：app端不负责存储数据，存到redis
             String key = AppletCacheConstant.ORDERITEMVO_STATISTICS + orderNo;
             RMapCache<Long, OrderItemVo> orderItemVoRMap = redissonClient.getMapCache(key);
             OrderItemVo orderItemHandler = orderItemVoRMap.get(dishId);
@@ -428,7 +430,7 @@ public class AppletFaceImpl implements AppletFace {
                         .reducePrice(dish.getReducePrice())
                         .build();
                 orderItemVo.setAffixVo(affixVoList.get(0));
-                //沿用订单中的分库键
+                //沿用订单中的分库键 ****分库分表***
                 orderItemVo.setShardingId(orderVo.getShardingId());
                 orderItemVoRMap.put(dishId, orderItemVo);
                 //4.2、如果以往购物车订单项中有此菜品，则进行购物车订单项数量递增
@@ -584,19 +586,23 @@ public class AppletFaceImpl implements AppletFace {
                     AppletCacheConstant.REDIS_LEASETIME,
                     TimeUnit.MINUTES)) {
                 boolean flag = true;
+                // 订单必须是待付款或付款中的
                 orderVoResult = orderService.findOrderByOrderNo(orderNo);
-                //2、查询可以核算订单项
+                if (orderVoResult == null) {
+                    throw  new ProjectException(OrderItemEnum.UPDATE_ORDERITEM_FAIL);
+                }
+                //2、查询可以核算订单项  mysql
                 List<OrderItem> orderItemList = orderItemService.findOrderItemByOrderNo(orderVoResult.getOrderNo());
                 List<OrderItemVo> orderItemVoStatisticsList = BeanConv.toBeanList(orderItemList, OrderItemVo.class);
                 //2.1、处理空集合
                 if (EmptyUtil.isNullOrEmpty(orderItemVoStatisticsList)) {
                     orderItemVoStatisticsList = new ArrayList<>();
                 }
-                //3、查询购物车订单项
+                //3、查询购物车订单项 redis
                 key = AppletCacheConstant.ORDERITEMVO_STATISTICS + orderNo;
                 RMapCache<Long, OrderItemVo> orderItemVoRMap = redissonClient.getMapCache(key);
                 List<OrderItemVo> orderItemVoTemporaryList = (List<OrderItemVo>)orderItemVoRMap.readAllValues();
-                //4、购物车订单项不为空才合并
+                //4、购物车订单项不为空才合并: 冒泡排序
                 if (!EmptyUtil.isNullOrEmpty(orderItemVoTemporaryList)) {
                     // 构建合并后的订单项
                     List<OrderItemVo> dbOrderItemVos = new ArrayList<>();
@@ -604,9 +610,10 @@ public class AppletFaceImpl implements AppletFace {
                         boolean opertion = false;
                         if (!EmptyUtil.isNullOrEmpty(orderItemVoStatisticsList)) {
                             for (OrderItemVo dborderItemVo : orderItemVoStatisticsList) { // mysql
-                                if (dborderItemVo.getDishId().equals(orderItemVo.getDishId())) {
+                                if (dborderItemVo.getDishId().equals(orderItemVo.getDishId())) { // 口味
                                     // 数量
                                     dborderItemVo.setDishNum(orderItemVo.getDishNum() + dborderItemVo.getDishNum());
+                                    // 解决并发修改异常问题
                                     dbOrderItemVos.add(dborderItemVo);
                                     opertion = true;
                                     break;
@@ -641,11 +648,11 @@ public class AppletFaceImpl implements AppletFace {
                             ).reduce(BigDecimal.ZERO, BigDecimal::add)
                             .setScale(2,BigDecimal.ROUND_HALF_UP);
                     //7、更新订单金额信息
-                    OrderVo orderVoHandler = OrderVo.builder()
+                    Order order = Order.builder()
                             .id(orderVoResult.getId())
                             .payableAmountSum(sumPrice)
                             .build();
-                    flag = orderService.updateById(BeanConv.toBean(orderVoHandler, Order.class));
+                    flag = orderService.updateById(order);
                     if (!flag) {
                         projectException = new ProjectException(OrderItemEnum.SAVE_ORDER_FAIL);
                     }

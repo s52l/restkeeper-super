@@ -23,6 +23,7 @@ import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,11 +107,15 @@ public class DishFaceImpl implements DishFace {
      *
      */
     @Override
+    @Transactional
     public DishVo createDish(DishVo dishVo) throws ProjectException{
         try {
             //创建菜品
             DishVo dishVoResult = BeanConv.toBean(dishService.createDish(dishVo), DishVo.class);
             dishVoResult.setHasDishFlavor(dishVo.getHasDishFlavor());
+            if (EmptyUtil.isNullOrEmpty(dishVoResult.getId())) {
+                throw new ProjectException(DishEnum.CREATE_FAIL);
+            }
             //构建初始化库存****
             String key = AppletCacheConstant.REPERTORY_DISH+dishVoResult.getId();
             RAtomicLong atomicLong = redissonClient.getAtomicLong(key);

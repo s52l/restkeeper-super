@@ -57,7 +57,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(Order::getOrderNo,orderNo);
         queryWrapper.lambda().eq(Order::getEnableFlag,SuperConstant.YES);
-        queryWrapper.lambda().and(wrapper->wrapper.eq(Order::getOrderState,TradingConstant.DFK).or().eq(Order::getOrderState,TradingConstant.FKZ));
+        queryWrapper.lambda().and(wrapper->wrapper
+                .eq(Order::getOrderState,TradingConstant.DFK)
+                .or().eq(Order::getOrderState,TradingConstant.FKZ));
         Order order = getOne(queryWrapper);
         return BeanConv.toBean(order,OrderVo.class);
     }
