@@ -6,6 +6,7 @@ import com.itheima.restkeeper.basic.ResponseWrap;
 import com.itheima.restkeeper.enums.BrandEnum;
 import com.itheima.restkeeper.req.BrandVo;
 import com.itheima.restkeeper.utils.ResponseWrapBuild;
+import io.seata.spring.annotation.GlobalTransactional;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -68,6 +69,7 @@ public class BrandController {
     @PostMapping
     @ApiOperation(value = "添加品牌",notes = "添加品牌")
     @ApiImplicitParam(name = "brandVo",value = "品牌对象",required = true,dataType = "BrandVo")
+    @GlobalTransactional(rollbackFor=Exception.class)
     ResponseWrap<BrandVo> createBrand(@RequestBody BrandVo brandVo) {
         BrandVo brandVoResult = brandFace.createBrand(brandVo);
         return ResponseWrapBuild.build(BrandEnum.SUCCEED,brandVoResult);

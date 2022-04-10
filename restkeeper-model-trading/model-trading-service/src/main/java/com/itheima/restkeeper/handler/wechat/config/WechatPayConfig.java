@@ -12,7 +12,6 @@ import com.itheima.restkeeper.utils.EmptyUtil;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -65,9 +64,12 @@ public class WechatPayConfig {
         List<OtherConfigVo> otherConfigs = payChannelVo.getOtherConfigs();
         //2、转换其他属性为map结构
         Map<String,String> otherConfigMap = new HashMap<>();
-        otherConfigs.forEach(n->{
-            otherConfigMap.put(n.getConfigKey(),n.getConfigValue());
-        });
+        if (!EmptyUtil.isNullOrEmpty(otherConfigs)) {
+            otherConfigs.forEach(n->{
+                otherConfigMap.put(n.getConfigKey(),n.getConfigValue());
+            });
+        }
+
         return WechatPayClient.builder()
             .appid(payChannelVo.getAppId())
             .domain(payChannelVo.getDomain())

@@ -2,10 +2,9 @@ package com.itheima.restkeeper.handler.impl;
 
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.itheima.restkeeper.constant.TradingConstant;
-import com.itheima.restkeeper.handler.BeforePayHandler;
-import com.itheima.restkeeper.constant.SuperConstant;
 import com.itheima.restkeeper.enums.TradingEnum;
 import com.itheima.restkeeper.exception.ProjectException;
+import com.itheima.restkeeper.handler.BeforePayHandler;
 import com.itheima.restkeeper.pojo.RefundRecord;
 import com.itheima.restkeeper.pojo.Trading;
 import com.itheima.restkeeper.req.RefundRecordVo;
@@ -15,8 +14,6 @@ import com.itheima.restkeeper.service.ITradingService;
 import com.itheima.restkeeper.utils.EmptyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 /**
  * @ClassName BeforePayHandlerImpl.java
@@ -39,7 +36,7 @@ public class BeforePayHandlerImpl implements BeforePayHandler {
         Trading trading = tradingService.findTradByProductOrderNo(tradingVo.getProductOrderNo());
         if (!EmptyUtil.isNullOrEmpty(trading)) {
             String tradingState = trading.getTradingState();
-            //已结算、免单：直接抛出重复支付异常
+            //已结算、免单：直接抛出重复支付异常，解决重复支付问题
             if (TradingConstant.YJS.equals(tradingState) ||
                 TradingConstant.MD.equals(tradingState)) {
                 throw new ProjectException(TradingEnum.TRADING_STATE_SUCCEED);
@@ -56,6 +53,7 @@ public class BeforePayHandlerImpl implements BeforePayHandler {
                 throw new ProjectException(TradingEnum.PAYING_TRADING_FAIL);
             }
         }else {
+            //首次支付
             tradingVo.setTradingOrderNo((Long)identifierGenerator.nextId(tradingVo));
         }
         return tradingVo;

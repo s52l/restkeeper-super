@@ -81,7 +81,9 @@ public class ReactiveSecurityConfig {
                     .exceptionHandling().authenticationEntryPoint(jsonServerAuthenticationEntryPoint)
             .and()
                     // 匿名资源放行
-                    .authorizeExchange().pathMatchers(securityProperties.getIgnoreUrl().toArray(new String[securityProperties.getIgnoreUrl().size()])).permitAll()
+                    .authorizeExchange()
+                    .pathMatchers(securityProperties.getIgnoreUrl().toArray(new String[securityProperties.getIgnoreUrl().size()]))
+                    .permitAll()
             .and()
                 //指定当前的以表单提交方式进行校验
                 .formLogin()

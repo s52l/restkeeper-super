@@ -12,6 +12,7 @@ import com.itheima.restkeeper.service.IBrandService;
 import com.itheima.restkeeper.utils.BeanConv;
 import com.itheima.restkeeper.utils.EmptyUtil;
 import com.itheima.restkeeper.utils.ExceptionsUtil;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -74,6 +75,7 @@ public class BrandFaceImpl implements BrandFace {
     }
 
     @Override
+    @GlobalTransactional(rollbackFor = Exception.class)
     public BrandVo createBrand(BrandVo brandVo) throws ProjectException{
         try {
             Brand brand = brandService.createBrand(brandVo);

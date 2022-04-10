@@ -131,7 +131,7 @@ public class OrderFaceImpl implements OrderFace {
             if (lockOrderItem.tryLock(
                 AppletCacheConstant.REDIS_WAIT_TIME,
                 AppletCacheConstant.REDIS_LEASETIME,
-                TimeUnit.SECONDS)){
+                TimeUnit.MINUTES)){
                 String key = AppletCacheConstant.REPERTORY_DISH+dishId;
                 RAtomicLong atomicLong = redissonClient.getAtomicLong(key);
                 //4.1、添加可核算订单项
@@ -191,15 +191,19 @@ public class OrderFaceImpl implements OrderFace {
      * @return
      */
     private void removeToOrderItem(Long dishId, Long orderNo, RAtomicLong atomicLong)  {
-        //1、修改订单项
-        Boolean flagOrderItem  = orderItemService.updateDishNum(-1L, dishId,orderNo);
-        //2、菜品库存
-        Boolean flagDish = dishService.updateDishNumber(1L,dishId);
-        if (!flagOrderItem||!flagDish){
+        try {
+            //1、修改订单项
+            Boolean flagOrderItem  = orderItemService.updateDishNum(-1L, dishId,orderNo);
+            //2、菜品库存
+            Boolean flagDish = dishService.updateDishNumber(1L,dishId);
+            if (!flagOrderItem||!flagDish){
+                throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
+            }
+            //3、添加缓存中的库存数量
+            atomicLong.incrementAndGet();
+        } catch (ProjectException e) {
             throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
         }
-        //3、添加缓存中的库存数量
-        atomicLong.incrementAndGet();
     }
 
     /**
@@ -211,20 +215,25 @@ public class OrderFaceImpl implements OrderFace {
      */
     private void addToOrderItem(Long dishId, Long orderNo, RAtomicLong atomicLong)  {
         //1、如果库存够，redis减库存
-        if (atomicLong.decrementAndGet()>=0){
-            //2、修改可核算订单项
-            Boolean flagOrderItem  = orderItemService.updateDishNum(1L, dishId,orderNo);
-            //3、减菜品库存
-            Boolean flagDish = dishService.updateDishNumber(-1L,dishId);
-            if (!flagOrderItem||!flagDish){
-                //4、减菜品库存失败，归还redis菜品库存
+        try {
+            if (atomicLong.decrementAndGet()>=0){
+                //2、修改可核算订单项
+                Boolean flagOrderItem  = orderItemService.updateDishNum(1L, dishId,orderNo);
+                //3、减菜品库存
+                Boolean flagDish = dishService.updateDishNumber(-1L,dishId);
+                if (!flagOrderItem||!flagDish){
+                    //4、减菜品库存失败，归还redis菜品库存
+                    atomicLong.incrementAndGet();
+                    throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
+                }
+            }else {
+                //5、redis库存不足，虽然可以不处理，但建议还是做归还库存
                 atomicLong.incrementAndGet();
-                throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
+                throw new ProjectException(ShoppingCartEnum.UNDERSTOCK);
             }
-        }else {
-            //5、redis库存不足，虽然可以不处理，但建议还是做归还库存
+        } catch (ProjectException e) {
             atomicLong.incrementAndGet();
-            throw new ProjectException(ShoppingCartEnum.UNDERSTOCK);
+            throw new ProjectException(ShoppingCartEnum.UPDATE_DISHNUMBER_FAIL);
         }
     }
 
@@ -232,12 +241,12 @@ public class OrderFaceImpl implements OrderFace {
     @Override
     @GlobalTransactional
     public TradingVo handleTrading(OrderVo orderVo) throws ProjectException{
-        //1、根据订单生成交易单
+        //1、根据订单生成交易单，订单编号设置成功，交易单号未设置
         TradingVo tradingVo = tradingConvertor(orderVo);
         if (EmptyUtil.isNullOrEmpty(tradingVo)){
             throw new ProjectException(OrderEnum.FAIL);
         }
-        //2、调用统一收单线下交易预创建
+        //2、调用统一收单线下交易预创建 TODO 后期讲解
         TradingVo tradingVoResult = null;
         if (TradingConstant.TRADING_CHANNEL_WECHAT_PAY.equals(orderVo.getTradingChannel())||
             TradingConstant.TRADING_CHANNEL_ALI_PAY.equals(orderVo.getTradingChannel())){
@@ -261,6 +270,7 @@ public class OrderFaceImpl implements OrderFace {
                 throw new ProjectException(OrderEnum.FAIL);
             }
         }
+        //二维码数据
         return tradingVoResult;
     }
 
@@ -432,6 +442,7 @@ public class OrderFaceImpl implements OrderFace {
                 .payeeId(orderVo.getCashierId())
                 .payeeName(orderVo.getCashierName())
                 .productOrderNo(order.getOrderNo())
+                    //**** tradingOrderNo交易单号，专门和三方系统对接，目前未设置tradingOrderNo
                 .memo(order.getTableName()+":"+order.getOrderNo())
                 .build();
             return tradingVo;

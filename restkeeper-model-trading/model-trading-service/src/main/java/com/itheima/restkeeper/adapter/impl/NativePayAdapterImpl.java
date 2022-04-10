@@ -1,6 +1,5 @@
 package com.itheima.restkeeper.adapter.impl;
 
-import com.itheima.restkeeper.handler.BeforePayHandler;
 import com.itheima.restkeeper.adapter.NativePayAdapter;
 import com.itheima.restkeeper.constant.TradingCacheConstant;
 import com.itheima.restkeeper.constant.TradingConstant;
@@ -49,6 +48,7 @@ public class NativePayAdapterImpl implements NativePayAdapter {
     private static Map<String,String> nativePayHandlers =new HashMap<>();
 
     static {
+        //Map key=支付渠道 value=IOC容器中支付实现类的名称
         nativePayHandlers.put(TradingConstant.TRADING_CHANNEL_ALI_PAY,"aliNativePayHandler");
         nativePayHandlers.put(TradingConstant.TRADING_CHANNEL_WECHAT_PAY,"wechatNativePayHandler");
     }
@@ -80,10 +80,13 @@ public class NativePayAdapterImpl implements NativePayAdapter {
                 String nativePayHandlerString = nativePayHandlers.get(tradingVo.getTradingChannel());
                 NativePayHandler nativePayHandler = registerBeanHandler
                         .getBean(nativePayHandlerString, NativePayHandler.class);
-                //3、Native支付交易处理
+                //3、Native支付交易处理 二维码地址
                 TradingVo downLineTrading = nativePayHandler.createDownLineTrading(tradingVo);
-                //4、构建支付二维码
+                //4、构建支付二维码图片地址
                 String qrCodeUrl = showApiService.handlerQRcode(downLineTrading.getPlaceOrderMsg());
+                if (EmptyUtil.isNullOrEmpty(qrCodeUrl)) {
+                    throw new ProjectException(TradingEnum.NATIVE_PAY_FAIL);
+                }
                 downLineTrading.setQrCodeUrl(qrCodeUrl);
                 return downLineTrading;
             }else {

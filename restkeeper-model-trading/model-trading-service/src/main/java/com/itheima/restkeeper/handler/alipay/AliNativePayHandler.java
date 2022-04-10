@@ -59,8 +59,8 @@ public class AliNativePayHandler implements NativePayHandler {
         if (!flag){
             throw new ProjectException(TradingEnum.NATIVE_PAY_FAIL);
         }
-        //1.2、交易前置处理：幂等性处理
-        beforePayHandler.idempotentCreateDownLineTrading(tradingVo);
+        //1.2、交易前置处理：幂等性处理，交易单号设置完成
+        tradingVo = beforePayHandler.idempotentCreateDownLineTrading(tradingVo);
         //2、获得支付宝配置文件
         Config config = alipayConfig.queryConfig(tradingVo.getEnterpriseId());
         //3、容器如果为空，抛出异常
@@ -86,7 +86,7 @@ public class AliNativePayHandler implements NativePayHandler {
                 tradingVo.setPlaceOrderCode(subCode);
                 tradingVo.setPlaceOrderMsg(subMsg);
                 tradingVo.setPlaceOrderJson(JSONObject.toJSONString(precreateResponse));
-                tradingVo.setTradingState(TradingConstant.FKZ);
+                tradingVo.setTradingState(TradingConstant.FKZ); // 设置交易单状态 DFK --> FKZ
                 Trading trading = BeanConv.toBean(tradingVo, Trading.class);
                 flag = tradingService.saveOrUpdate(trading);
                 if (!flag){
@@ -127,6 +127,10 @@ public class AliNativePayHandler implements NativePayHandler {
             boolean success = ResponseChecker.success(queryResponse);
             //6、响应成功，分析交易状态
             if (success){
+                //交易状态：WAIT_BUYER_PAY（交易创建，等待买家付款）
+                // TRADE_CLOSED（未付款交易超时关闭，或支付完成后全额退款）
+                // TRADE_SUCCESS（交易支付成功）
+                // TRADE_FINISHED（交易结束，不可退款）
                 String tradeStatus = queryResponse.getTradeStatus();
                 //6.1、支付取消：TRADE_CLOSED（未付款交易超时关闭，或支付完成后全额退款）
                 if (TradingConstant.ALI_TRADE_CLOSED.equals(tradeStatus)){

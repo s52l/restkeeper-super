@@ -10,12 +10,12 @@ import com.itheima.restkeeper.req.UploadMultipartFile;
 import com.itheima.restkeeper.service.IAffixService;
 import com.itheima.restkeeper.utils.BeanConv;
 import com.itheima.restkeeper.utils.ExceptionsUtil;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -55,9 +55,11 @@ public class AffixFaceImpl implements AffixFace {
     }
 
     @Override
+    @GlobalTransactional(rollbackFor = Exception.class)
     public AffixVo bindBusinessId(AffixVo affixVo) throws ProjectException {
         try {
-            return BeanConv.toBean(affixService.bindBusinessId(affixVo),AffixVo.class);
+            Affix affix = affixService.bindBusinessId(affixVo);
+            return BeanConv.toBean(affix,AffixVo.class);
         } catch (Exception e) {
             log.error("绑定业务：{}异常：{}", affixVo.toString(),ExceptionsUtil.getStackTraceAsString(e));
             throw new ProjectException(AffixEnum.UPLOAD_FAIL);

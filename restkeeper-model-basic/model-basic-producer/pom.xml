@@ -13,6 +13,16 @@
 
     <name>model-basic-producer</name>
     <dependencies>
+        <dependency>
+            <groupId>com.itheima.restkeeper</groupId>
+            <artifactId>framework-seata</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.itheima.restkeeper</groupId>
+                    <artifactId>framework-knife4j-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>com.itheima.restkeeper</groupId>

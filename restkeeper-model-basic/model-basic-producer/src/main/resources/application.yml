@@ -16,6 +16,9 @@ spring:
     port: 6379
     password: pass
   cloud:
+    alibaba:
+      seata:
+        tx-service-group: project_tx_group
     stream:
       rabbit:
         bindings:
@@ -38,7 +41,6 @@ spring:
         sms-output:    #这个是消息通道的名称
           destination: sms-exchange     #exchange名称,交换模式默认是topic;把SpringCloud stream的消息输出通道绑定到RabbitMQ的sms-exchange交换器。
           content-type: application/json      #设置消息的类型，本次为json
-          binder: defaultRabbit
     alicloud:
       access-key: LTAI4G2g6WqYBZyZMovev1pd
       secret-key: 2Q4x5TpgHRP8Eo3ehQzCJxPteBl4R4
@@ -52,6 +54,36 @@ spring:
       url: jdbc:mysql://192.168.200.129:3306/restkeeper-basic?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
       username: root
       password: pass
+seata:
+  tx-service-group: project_tx_group
+  enabled: true
+  application-id: ${spring.application.name}
+  enable-auto-data-source-proxy: true
+  service:
+    #这里的名字与file.conf中vgroup_project_tx_group = "default"相同
+    vgroup-mapping:
+      project_tx_group: default
+    #这里的名字与file.conf中default.grouplist = "192.168.200.129:8091"相同
+    grouplist:
+      default: 192.168.200.129:9200
+  config:
+    type: nacos
+    nacos:
+      group: SEATA_GROUP
+      server-addr: 192.168.200.129:8848
+      username: nacos
+      password: nacos
+      namespace: a2334a2d-d74b-4bfb-ac6c-2058aa46aa8c
+  registry:
+    type: nacos
+    nacos:
+      group: SEATA_GROUP
+      server-addr: 192.168.200.129:8848
+      username: nacos
+      password: nacos
+      namespace: a2334a2d-d74b-4bfb-ac6c-2058aa46aa8c
+
+
 #mybatis配置
 mybatis-plus:
   # MyBaits 别名包扫描路径，通过该属性可以给包中的类注册别名
