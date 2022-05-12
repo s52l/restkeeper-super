@@ -17,7 +17,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -54,12 +53,12 @@ public class JwtReactiveAuthorizationManager implements ReactiveAuthorizationMan
         //校验权限
         UserVo userVo = JSONObject
                 .parseObject(jwtTokenManager.getCurrentUser(jwtToken).toString(),UserVo.class);
-        Set<String> resources = userVo.getResources();
+        Set<String> resources = userVo.getResources(); // 当前用户具备权限列表
         AuthorizationDecision authorizationDecision = null;
         //支持restfull
-        String methodValue = request.getMethodValue();
+        path = request.getMethodValue() + path;
         for (String resource : resources) {
-            if (antPathMatcher.match(resource, methodValue+path)) {
+            if (antPathMatcher.match(resource, path)) {
                 log.info("用户请求API校验通过，GrantedAuthority:{}，Path:{} ",resource, path);
                 authorizationDecision = new AuthorizationDecision(true);
                 return Mono.justOrEmpty(authorizationDecision);

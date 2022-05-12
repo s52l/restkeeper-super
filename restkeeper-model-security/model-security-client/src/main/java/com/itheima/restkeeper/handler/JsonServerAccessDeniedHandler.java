@@ -26,7 +26,7 @@ public class JsonServerAccessDeniedHandler implements ServerAccessDeniedHandler 
     public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException denied) {
         //指定返回状态
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        response.setStatusCode(HttpStatus.OK);
         response.getHeaders().set(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
         //返回处理结果
         ResponseWrap<Boolean> responseWrap = ResponseWrapBuild.build(AuthEnum.AUTH_FAIL, false);

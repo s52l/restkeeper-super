@@ -1,9 +1,10 @@
 package com.itheima.restkeeper.core;
 
-import com.itheima.restkeeper.constant.SecurityCacheConstant;
 import com.itheima.restkeeper.constant.SmsCacheConstant;
 import com.itheima.restkeeper.constant.SuperConstant;
-import com.itheima.restkeeper.req.EnterpriseVo;
+import com.itheima.restkeeper.enums.AuthEnum;
+import com.itheima.restkeeper.exception.AuthCodeException;
+import com.itheima.restkeeper.exception.UsernamePasswordException;
 import com.itheima.restkeeper.utils.EmptyUtil;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
@@ -61,7 +62,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
                 .filter(u -> this.passwordEncoder.matches(password, u.getPassword()))
                 //失败处理
                 .switchIfEmpty(Mono.defer(()->
-                    Mono.error(new BadCredentialsException("Invalid Credentials"))))
+                    Mono.error(new UsernamePasswordException("用户名或密码错误"))))
                 //成功处理
                 .map(u ->
                     new UsernamePasswordAuthenticationToken(u, u.getPassword(), u.getAuthorities()));
@@ -73,14 +74,14 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
             RBucket<String> bucket = redissonClient.getBucket(key);
             String authCode = bucket.get();
             if (EmptyUtil.isNullOrEmpty(authCode)){
-                Mono.error(new BadCredentialsException("Invalid Credentials"));
+                Mono.error(new AuthCodeException(AuthEnum.AUTH_CODE_ISNULL));
             }
             return userDetailsMono.publishOn(this.scheduler)
                 //密码比较
                 .filter(u -> authCode.equals(password))
                 //失败处理
                 .switchIfEmpty(Mono.defer(()->
-                    Mono.error(new BadCredentialsException("Invalid Credentials"))))
+                    Mono.error(new AuthCodeException(AuthEnum.AUTH_CODE_ERROR))))
                 //成功处理
                 .map(u ->
                     new UsernamePasswordAuthenticationToken(u, u.getPassword(), u.getAuthorities()));

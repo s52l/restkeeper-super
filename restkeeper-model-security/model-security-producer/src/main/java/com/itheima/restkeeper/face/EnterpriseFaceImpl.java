@@ -34,7 +34,7 @@ import java.util.List;
 public class EnterpriseFaceImpl implements EnterpriseFace {
 
     @Autowired
-    IEnterpriseService EnterpriseService;
+    IEnterpriseService enterpriseService;
 
     @Autowired
     InitEnterpriseSite initEnterpriseWebSite;
@@ -44,7 +44,7 @@ public class EnterpriseFaceImpl implements EnterpriseFace {
                                                    int pageNum,
                                                    int pageSize)throws ProjectException {
         try {
-            Page<Enterprise> page = EnterpriseService.findEnterpriseVoPage(enterpriseVo, pageNum, pageSize);
+            Page<Enterprise> page = enterpriseService.findEnterpriseVoPage(enterpriseVo, pageNum, pageSize);
             Page<EnterpriseVo> pageVo = new Page<>();
             BeanConv.toBean(page,pageVo);
             //结果集转换
@@ -61,7 +61,7 @@ public class EnterpriseFaceImpl implements EnterpriseFace {
     @Override
     public EnterpriseVo createEnterprise(EnterpriseVo eterperiseVo)throws ProjectException {
         try {
-            Enterprise enterpriseResult = EnterpriseService.createEnterprise(eterperiseVo);
+            Enterprise enterpriseResult = enterpriseService.createEnterprise(eterperiseVo);
             //同步缓存
             if (!EmptyUtil.isNullOrEmpty(enterpriseResult)){
                 initEnterpriseWebSite.addWebSiteforRedis(eterperiseVo);
@@ -77,7 +77,7 @@ public class EnterpriseFaceImpl implements EnterpriseFace {
     @Override
     public Boolean updateEnterprise(EnterpriseVo enterpriseVo)throws ProjectException {
         try {
-            Boolean flag = EnterpriseService.updateEnterprise(enterpriseVo);
+            Boolean flag = enterpriseService.updateEnterprise(enterpriseVo);
             //同步缓存
             if (flag){
                 if (enterpriseVo.getEnableFlag().equals(SuperConstant.YES)){
@@ -99,11 +99,11 @@ public class EnterpriseFaceImpl implements EnterpriseFace {
         try {
             //同步缓存
             for (String checkedId : checkedIds) {
-                Enterprise enterprise = EnterpriseService.getById(checkedId);
+                Enterprise enterprise = enterpriseService.getById(checkedId);
                 EnterpriseVo enterpriseVo = BeanConv.toBean(enterprise, EnterpriseVo.class);
                 initEnterpriseWebSite.deleteWebSiteforRedis(enterpriseVo);
             }
-            return  EnterpriseService.deleteEnterprise(checkedIds);
+            return  enterpriseService.deleteEnterprise(checkedIds);
         } catch (Exception e) {
             log.error("删除企业异常：{}", ExceptionsUtil.getStackTraceAsString(e));
             throw new ProjectException(EnterpriseEnum.DELETE_FAIL);
@@ -113,7 +113,7 @@ public class EnterpriseFaceImpl implements EnterpriseFace {
     @Override
     public List<EnterpriseVo> initEnterpriseIdOptions() throws ProjectException{
         try {
-            List<Enterprise> enterprises = EnterpriseService.initEnterpriseIdOptions();
+            List<Enterprise> enterprises = enterpriseService.initEnterpriseIdOptions();
             return BeanConv.toBeanList(enterprises,EnterpriseVo.class);
         } catch (Exception e) {
             log.error("删除企业异常：{}", ExceptionsUtil.getStackTraceAsString(e));

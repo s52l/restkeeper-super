@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @ClassName RoundRobin.java
@@ -24,11 +25,12 @@ import java.util.Set;
  * 在按照轮询/随机算法在获取对应集合下标的值即可
  *
  * 优化1： synchronized大量同步锁，性能不高，使用 AtomicLong对象解决线程安全问题
+ * 存在的问题： AtomicInteger 基于CAS实现占用CPU， 使用线程调度解决
  */
 @Component
-public class RoundRobinSend extends BaseSendLoadBalancer {
+public class RoundRobinSend1 extends BaseSendLoadBalancer {
 
-    private static Integer pos = 0;
+    private static AtomicInteger pos = new AtomicInteger(0);
 
     @Override
     public String chooseChannel(List<SmsTemplate> smsTemplates, Set<String> mobile) {
@@ -37,16 +39,12 @@ public class RoundRobinSend extends BaseSendLoadBalancer {
 
         // 取得通道地址List 3
         Set<String> keySet = channelMap.keySet();
-        ArrayList<String> keyList = new ArrayList<String>();
-        keyList.addAll(keySet);
+        ArrayList<String> keyList = new ArrayList<String>(keySet);
 
         String channelName = null;
-        synchronized (pos) {
-            if (pos >= keySet.size())
-                pos = 0;
-            channelName = keyList.get(pos);
-            pos ++;
-        }
+        if (pos.incrementAndGet() >= keySet.size())
+            pos.set(0);
+        channelName = keyList.get(pos.get());
         return channelName;
     }
 

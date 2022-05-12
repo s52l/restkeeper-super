@@ -23,7 +23,7 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
 /**
  * @ClassName ReactiveSecurityConfig.java
- * @Description 支持flum的权限配置
+ * @Description 支持webflux的权限配置
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -68,6 +68,7 @@ public class ReactiveSecurityConfig {
     /****
      * @description 认证核心配置
      * @return
+     * SpringSecurity 底层是基于 过滤器实现的，每一个功能都是需要配置过滤器
      */
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -95,7 +96,7 @@ public class ReactiveSecurityConfig {
                 // 登陆失败handler
                 .authenticationFailureHandler(jsonServerAuthenticationFailureHandler)
             .and()
-                // 访问权限控制
+                // 访问权限控制处理器
                 .authorizeExchange().anyExchange().access(jwtReactiveAuthorizationManager)
             .and()
                 // 无访问权限处理

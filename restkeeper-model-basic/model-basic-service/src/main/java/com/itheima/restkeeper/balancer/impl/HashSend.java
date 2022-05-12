@@ -29,7 +29,7 @@ public class HashSend extends BaseSendLoadBalancer {
         int hashCode = mobile.hashCode();
         int serverListSize = keyList.size();
         int serverPos = hashCode % serverListSize;
-        return keyList.get(serverPos);
+        return keyList.get(serverPos);  // 防止数组越界
     }
 
 }

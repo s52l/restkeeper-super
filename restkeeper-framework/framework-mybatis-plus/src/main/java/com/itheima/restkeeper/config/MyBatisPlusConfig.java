@@ -139,6 +139,13 @@ public class MyBatisPlusConfig {
                 return SuperConstant.STORE_ID;
             }
 
+            /**
+             * 是否忽略表拼装SQL
+             * @param tableName 当前正在执行的SQL 表名
+             * @return
+             * true：忽略getTenantIdColumn对应的字段，不拼装SQL
+             * false：不忽略getTenantIdColumn对应的字段，拼装SQL条件
+             */
             @Override
             public boolean ignoreTable(String tableName) {
                 // 是否需要需要过滤某一张表

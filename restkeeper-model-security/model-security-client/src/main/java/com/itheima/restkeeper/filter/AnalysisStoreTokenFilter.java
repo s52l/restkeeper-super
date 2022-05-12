@@ -27,7 +27,8 @@ public class AnalysisStoreTokenFilter implements GlobalFilter {
         //已登录从头部中拿到storeToken
         if (!EmptyUtil.isNullOrEmpty(storeToken)){
             //放入下游请求头中
-            ServerHttpRequest serverHttpRequest = exchange.getRequest().mutate().header(SuperConstant.CURRENT_STORE,storeToken).build();
+            ServerHttpRequest serverHttpRequest = exchange.getRequest()
+                    .mutate().header(SuperConstant.CURRENT_STORE,storeToken).build();
             //把新的 exchange放回到过滤链
             return chain.filter(exchange.mutate().request(serverHttpRequest).build());
         }

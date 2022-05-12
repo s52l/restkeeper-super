@@ -54,7 +54,7 @@ public class SmsSendAdapterImpl implements SmsSendAdapter {
         sendHandlers.put(SuperConstant.BAIDU_SMS,"baiduSmsSendHandler");
         loadBalancers.put(SuperConstant.HASH,"hashSend");
         loadBalancers.put(SuperConstant.RANDOM,"randomSend");
-        loadBalancers.put(SuperConstant.ROUND_ROBIN,"roundRobinSend");
+        loadBalancers.put(SuperConstant.ROUND_ROBIN,"roundRobinSend2");
         loadBalancers.put(SuperConstant.WEIGHT_RANDOM,"weightRandomSend");
         loadBalancers.put(SuperConstant.WEIGHT_ROUND_ROBIN,"weightRoundRobinSend");
     }

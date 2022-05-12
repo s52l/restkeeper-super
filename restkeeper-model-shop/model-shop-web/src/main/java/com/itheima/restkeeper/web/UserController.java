@@ -19,9 +19,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -39,7 +46,8 @@ public class UserController {
     UserFace userFace;
 
     @Autowired
-    BCryptPasswordEncoder bCryptPasswordEncoder;
+    PasswordEncoder passwordEncoder;
+
 
     /**
      * @Description 用户列表
@@ -79,7 +87,7 @@ public class UserController {
 
         String plainPassword = userVo.getPassword();
         //必须要加{bcrypt}要不认证不通过
-        String password = "{bcrypt}"+bCryptPasswordEncoder.encode(plainPassword);
+        String password = passwordEncoder.encode(plainPassword);
         userVo.setPassword(password);
         return ResponseWrapBuild.build(UserEnum.SUCCEED,userFace.createUser(userVo));
     }
@@ -148,7 +156,7 @@ public class UserController {
     @ApiImplicitParam(name = "userVo",value = "用户对象",required = true,dataType = "UserVo")
     ResponseWrap<Boolean> restPssword(@RequestBody UserVo userVo) throws ProjectException {
         //必须要加{bcrypt}要不认证不通过
-        String password = "{bcrypt}"+bCryptPasswordEncoder.encode("88488");
+        String password = passwordEncoder.encode("88488");
         userVo.setPassword(password);
         Boolean flag = userFace.updateUser(userVo);
         return ResponseWrapBuild.build(UserEnum.SUCCEED,flag);

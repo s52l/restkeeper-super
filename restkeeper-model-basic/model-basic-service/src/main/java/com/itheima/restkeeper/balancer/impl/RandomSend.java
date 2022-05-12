@@ -4,7 +4,11 @@ import com.itheima.restkeeper.balancer.BaseSendLoadBalancer;
 import com.itheima.restkeeper.pojo.SmsTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @ClassName Random.java
@@ -20,11 +24,12 @@ public class RandomSend extends BaseSendLoadBalancer {
 
         // 取得channel地址List
         Set<String> keySet = channelMap.keySet();
-        ArrayList<String> keyList = new ArrayList<String>();
-        keyList.addAll(keySet);
+        List<String> keyList = new ArrayList<>(keySet);
+        //ArrayList<String> keyList = new ArrayList<String>();
+        //keyList.addAll(keySet);
 
         Random random = new Random();
-        int randomPos = random.nextInt(keyList.size());
+        int randomPos = random.nextInt(keyList.size()); // 左闭右开 [0,3) 0 1 2
         return keyList.get(randomPos);
     }
 

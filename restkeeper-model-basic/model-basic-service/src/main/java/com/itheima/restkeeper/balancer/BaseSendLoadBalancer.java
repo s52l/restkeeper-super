@@ -32,9 +32,9 @@ public class BaseSendLoadBalancer implements SendLoadBalancer {
     }
 
     @Override
-    public Map<String, String> getChannelList(List<SmsTemplate> SmsTemplates) {
+    public Map<String, String> getChannelList(List<SmsTemplate> smsTemplates) {
         //处理模板
-        Set<String> channelLabelList = SmsTemplates.stream()
+        Set<String> channelLabelList = smsTemplates.stream()
                 .map(SmsTemplate::getChannelLabel).collect(Collectors.toSet());
         //查询模板对应的渠道
         List<SmsChannel> smsChannels =smsChannelService.findChannelInChannelLabel(channelLabelList);

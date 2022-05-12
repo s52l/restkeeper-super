@@ -30,8 +30,12 @@ public class InitEnterpriseSite {
     @Autowired
     RedissonClient redissonClient;
 
+
     /**
-     *获得两时间的秒间隔
+     * 获得两时间的秒间隔
+     * @param date1 当前时间
+     * @param date2 过期时间
+     * @return
      */
     public Long secondInterval(Date date1, Date date2) {
         long secondInterval = (date2.getTime() - date1.getTime()) / 1000;

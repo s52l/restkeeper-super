@@ -96,12 +96,11 @@ dubbo:
     port: 27075
     threads: 200
     accesslog: logs/model-trading-producer-01.log
-
   cloud:
     subscribed-services: ''
 restkeeper:
   framework:
-   #万维易源接口信息
-   show-api:
-     appid: 668779
-     sign: e8b5858d9b4b49ebb127cc137dd38cf7
+    #万维易源接口信息
+    show-api:
+      appid: 668779
+      sign: e8b5858d9b4b49ebb127cc137dd38cf7

@@ -14,8 +14,10 @@ import java.util.List;
 @ConfigurationProperties(prefix = "mybatis-plus")
 public class TenantProperties {
 
+    //ignore-enterprise-tables:
     List<String> ignoreEnterpriseTables = new ArrayList<>();
 
+    //ignore-store-tables:
     List<String> ignoreStoreTables = new ArrayList<>();
 
     public List<String> getIgnoreEnterpriseTables() {
