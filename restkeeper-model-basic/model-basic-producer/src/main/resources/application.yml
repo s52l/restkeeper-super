@@ -12,7 +12,7 @@ spring:
   redis:
     redisson:
       config: classpath:singleServerConfig.yaml
-    host: 192.168.200.129
+    host: http://www.s52l.cn
     port: 6379
     password: pass
   cloud:
@@ -32,7 +32,7 @@ spring:
           environment:  #配置rabbimq连接环境
             spring:
               rabbitmq:
-                host: 192.168.200.129   #rabbitmq 服务器的地址
+                host: http://www.s52l.cn   #rabbitmq 服务器的地址
                 port: 5672           #rabbitmq 服务器端口
                 username: admin       #rabbitmq 用户名
                 password: pass       #rabbitmq 密码
@@ -51,7 +51,7 @@ spring:
   datasource:
     druid:
       driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://192.168.200.129:3306/restkeeper-basic?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+      url: jdbc:mysql://http://www.s52l.cn:3305/restkeeper-basic?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
       username: root
       password: pass
 seata:
@@ -65,12 +65,12 @@ seata:
       project_tx_group: default
     #这里的名字与file.conf中default.grouplist = "192.168.200.129:8091"相同
     grouplist:
-      default: 192.168.200.129:9200
+      default: http://www.s52l.cn:9200
   config:
     type: nacos
     nacos:
       group: SEATA_GROUP
-      server-addr: 192.168.200.129:8848
+      server-addr: http://www.s52l.cn:8849
       username: nacos
       password: nacos
       namespace: a2334a2d-d74b-4bfb-ac6c-2058aa46aa8c
@@ -78,7 +78,7 @@ seata:
     type: nacos
     nacos:
       group: SEATA_GROUP
-      server-addr: 192.168.200.129:8848
+      server-addr: http://www.s52l.cn:8849
       username: nacos
       password: nacos
       namespace: a2334a2d-d74b-4bfb-ac6c-2058aa46aa8c
@@ -129,7 +129,7 @@ dubbo:
   scan:
     base-packages: com.itheima.restkeeper
   registry:
-    address: spring-cloud://192.168.200.129
+    address: spring-cloud://http://www.s52l.cn
   protocol:
     #指定二进制协议
     name: dubbo

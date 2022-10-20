@@ -19,7 +19,7 @@ dubbo:
   scan:
     base-packages: com.itheima.restkeeper.web
   registry:
-    address: spring-cloud://192.168.200.129
+    address: spring-cloud://http://www.s52l.cn
   protocol:
     name: dubbo
     port: 27074

@@ -4,14 +4,14 @@ spring:
   #应用配置
   application:
     #应用名称
-    name: gateway-operator
+    name: restkeeper-gateway-operator
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.200.129:8848 # nacos注册中心
+        server-addr: http://www.s52l.cn:8849 # nacos注册中心
         group: SEATA_GROUP
       config:
-        server-addr: 192.168.200.129:8848 # nacos配置中心地址
+        server-addr: http://www.s52l.cn:8849 # nacos配置中心地址
         group: SEATA_GROUP
         file-extension: yml
 logging:
